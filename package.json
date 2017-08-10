@@ -1,0 +1,35 @@
+{
+  "name": "hapi-accept-language2",
+  "version": "1.0.0",
+  "description": "Parse accept-language header and attach to request for hapi",
+  "main": "index.js",
+  "scripts": {
+    "test": "lab -L -v"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damusix/hapi-accept-language2.git"
+  },
+  "keywords": [
+    "hapi",
+    "accept-language",
+    "RFC-5646",
+    "language",
+    "i18n",
+    "headers"
+  ],
+  "author": "Danilo Alonso",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/damusix/hapi-accept-language2/issues"
+  },
+  "homepage": "https://github.com/damusix/hapi-accept-language2#readme",
+  "dependencies": {
+    "accept-language-parser": "^1.4.1"
+  },
+  "devDependencies": {
+    "code": "^4.1.0",
+    "hapi": "^16.5.2",
+    "lab": "^14.1.1"
+  }
+}
