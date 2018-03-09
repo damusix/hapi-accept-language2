@@ -1,6 +1,6 @@
 {
   "name": "hapi-accept-language2",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Parse accept-language header and attach to request for hapi",
   "main": "index.js",
   "scripts": {
@@ -28,8 +28,8 @@
     "accept-language-parser": "^1.4.1"
   },
   "devDependencies": {
-    "code": "^4.1.0",
-    "hapi": "^16.5.2",
-    "lab": "^14.1.1"
+    "code": "^5.2.0",
+    "hapi": "^17.2.2",
+    "lab": "^15.3.1"
   }
 }

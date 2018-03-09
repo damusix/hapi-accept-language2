@@ -1,74 +1,63 @@
 'use strict';
 
 const Lab = require('lab');
-const Code = require('code');
+const { expect } = require('code');
 const Hapi = require('hapi');
 
-const hapiAcceptLanguage = {
-    register: require('..'),
-    options: {}
-};
+const AcceptLanguagePlugin = require('..');
 
-const lab = exports.lab = Lab.script();
+const { experiment, before, it } = exports.lab = Lab.script();
+
+
 let server;
 
-lab.experiment('Accept Language plugin w/o options', () => {
+experiment('Accept Language plugin w/o options', () => {
 
-    lab.before((done) => {
+    before(async () => {
 
-        server = new Hapi.Server();
-        server.connection({ port: 4111 });
+        server = new Hapi.Server({ port: 4111 });
 
         server.route({
 
             method: 'GET',
             path: '/',
-            handler: (request, reply) => {
+            handler: (request, h) => {
 
-                reply({
+                return {
                     headers: request.raw.req.headers,
                     pre: request.pre
-                }).code(200);
+                };
             }
         });
 
-        server.register([hapiAcceptLanguage], {}, (err) => {
-
-            if (err) {
-                return done(err);
-            }
-
-            server.initialize(done);
-        });
+        await server.register([AcceptLanguagePlugin]);
+        await server.initialize();
     });
 
-    lab.test('it should default to english when no language header is present', (done) => {
+    it('should default to english when no language header is present', async () => {
 
         const request = {
             method: 'GET',
             url: '/'
         };
 
-        server.inject(request, (response) => {
+        const response = await server.inject(request);
 
-            Code.expect(response.statusCode).to.equal(200);
-            Code.expect(response.result).to.be.an.object();
+        expect(response.statusCode).to.equal(200);
+        expect(response.result).to.be.an.object();
 
-            const pre = response.result.pre;
-            const headers = response.result.headers;
+        const pre = response.result.pre;
+        const headers = response.result.headers;
 
-            Code.expect(pre.language).to.exist();
-            Code.expect(headers['accept-language']).to.not.exist();
+        expect(pre.language).to.exist();
+        expect(headers['accept-language']).to.not.exist();
 
-            Code.expect(pre.language).to.be.an.array();
-            Code.expect(pre.language[0]).to.be.an.object();
-            Code.expect(pre.language[0].code).to.equal('en');
-
-            done();
-        });
+        expect(pre.language).to.be.an.array();
+        expect(pre.language[0]).to.be.an.object();
+        expect(pre.language[0].code).to.equal('en');
     });
 
-    lab.test('it should set a language cookie from browser language header', (done) => {
+    it('should set a language cookie from browser language header', async () => {
 
         const request = {
             method: 'GET',
@@ -80,27 +69,25 @@ lab.experiment('Accept Language plugin w/o options', () => {
             }
         };
 
-        server.inject(request, (response) => {
+        const response = await server.inject(request);
 
-            Code.expect(response.statusCode).to.equal(200);
-            Code.expect(response.result).to.be.an.object();
+        expect(response.statusCode).to.equal(200);
+        expect(response.result).to.be.an.object();
 
-            const pre = response.result.pre;
-            const headers = response.result.headers;
+        const pre = response.result.pre;
+        const headers = response.result.headers;
 
-            Code.expect(pre.language).to.exist();
-            Code.expect(headers['accept-language']).to.exist();
+        expect(pre.language).to.exist();
+        expect(headers['accept-language']).to.exist();
 
-            Code.expect(pre.language).to.be.an.array();
-            Code.expect(pre.language.length).to.be.above(1);
-            Code.expect(pre.language[0]).to.be.an.object();
-            Code.expect(pre.language[0].code).to.equal('es'); // Si señor!
+        expect(pre.language).to.be.an.array();
+        expect(pre.language.length).to.be.above(1);
+        expect(pre.language[0]).to.be.an.object();
+        expect(pre.language[0].code).to.equal('es'); // Si señor!
 
-            done();
-        });
     });
 
-    lab.test('it should decode language tags to extract region, script and quality an from browser language header as per RFC-5646 best practices', (done) => {
+    it('should decode language tags to extract region, script and quality an from browser language header as per RFC-5646 best practices', async () => {
 
         const request = {
             method: 'GET',
@@ -112,60 +99,56 @@ lab.experiment('Accept Language plugin w/o options', () => {
             }
         };
 
-        server.inject(request, (response) => {
+        const response = await server.inject(request);
 
-            Code.expect(response.statusCode).to.equal(200);
-            Code.expect(response.result).to.be.an.object();
+        expect(response.statusCode).to.equal(200);
+        expect(response.result).to.be.an.object();
 
-            const pre = response.result.pre;
-            const headers = response.result.headers;
+        const pre = response.result.pre;
+        const headers = response.result.headers;
 
-            Code.expect(pre.language).to.exist();
-            Code.expect(headers['accept-language']).to.exist();
+        expect(pre.language).to.exist();
+        expect(headers['accept-language']).to.exist();
 
-            console.log(pre);
+        console.log(pre);
 
-            Code.expect(pre.language).to.be.an.array();
-            Code.expect(pre.language.length).to.be.above(4);
+        expect(pre.language).to.be.an.array();
+        expect(pre.language.length).to.be.above(4);
 
-            Code.expect(pre.language[0].code).to.equal('es');
-            Code.expect(pre.language[0].region).to.equal('ES'); // Ethpaña!
-            Code.expect(pre.language[0].script).to.equal('Latn');
-            Code.expect(pre.language[0].quality).to.equal(1);
+        expect(pre.language[0].code).to.equal('es');
+        expect(pre.language[0].region).to.equal('ES'); // Ethpaña!
+        expect(pre.language[0].script).to.equal('Latn');
+        expect(pre.language[0].quality).to.equal(1);
 
-            Code.expect(pre.language[1].code).to.equal('en');
-            Code.expect(pre.language[1].region).to.equal('US');
-            Code.expect(pre.language[1].script).to.equal(null);
-            Code.expect(pre.language[1].quality).to.equal(0.9);
+        expect(pre.language[1].code).to.equal('en');
+        expect(pre.language[1].region).to.equal('US');
+        expect(pre.language[1].script).to.equal(null);
+        expect(pre.language[1].quality).to.equal(0.9);
 
-            Code.expect(pre.language[2].code).to.equal('en');
-            Code.expect(pre.language[2].region).to.equal('GR');
-            Code.expect(pre.language[2].script).to.equal(null);
-            Code.expect(pre.language[2].quality).to.equal(0.8);
+        expect(pre.language[2].code).to.equal('en');
+        expect(pre.language[2].region).to.equal('GR');
+        expect(pre.language[2].script).to.equal(null);
+        expect(pre.language[2].quality).to.equal(0.8);
 
-            Code.expect(pre.language[3].code).to.equal('pt');
-            Code.expect(pre.language[3].region).to.equal('PT');
-            Code.expect(pre.language[3].script).to.equal(null);
-            Code.expect(pre.language[3].quality).to.equal(0.7);
+        expect(pre.language[3].code).to.equal('pt');
+        expect(pre.language[3].region).to.equal('PT');
+        expect(pre.language[3].script).to.equal(null);
+        expect(pre.language[3].quality).to.equal(0.7);
 
-            Code.expect(pre.language[4].code).to.equal('pt');
-            Code.expect(pre.language[4].region).to.equal('BR');
-            Code.expect(pre.language[4].script).to.equal(null);
-            Code.expect(pre.language[4].quality).to.equal(0.6);
-
-            done();
-        });
+        expect(pre.language[4].code).to.equal('pt');
+        expect(pre.language[4].region).to.equal('BR');
+        expect(pre.language[4].script).to.equal(null);
+        expect(pre.language[4].quality).to.equal(0.6);
     });
 });
 
 
 
-lab.experiment('Accept Language plugin w/ options', () => {
+experiment('Accept Language plugin w/ options', () => {
 
-    lab.before((done) => {
+    before(async () => {
 
-        server = new Hapi.Server();
-        server.connection({ port: 4111 });
+        server = new Hapi.Server({ port: 4111 });
 
         server.route({
 
@@ -173,49 +156,43 @@ lab.experiment('Accept Language plugin w/ options', () => {
             path: '/',
             handler: (request, reply) => {
 
-                reply({
+                return {
                     headers: request.raw.req.headers,
                     pre: request.pre
-                }).code(200);
+                };
             }
         });
 
         // Set default language to spanish
-        hapiAcceptLanguage.options.defaultLanguage = 'es';
+        // AcceptLanguagePlugin.options.defaultLanguage = 'es';
 
-        server.register([hapiAcceptLanguage], {}, (err) => {
-
-            if (err) {
-                return done(err);
-            }
-
-            server.initialize(done);
-        });
+        await server.register([{
+            plugin: AcceptLanguagePlugin,
+            options: { defaultLanguage: 'es' }
+        }]);
+        await server.initialize();
     });
 
-    lab.test('it should default to defaultLanguage option when no language header is present', (done) => {
+    it('should default to defaultLanguage option when no language header is present', async () => {
 
         const request = {
             method: 'GET',
             url: '/'
         };
 
-        server.inject(request, (response) => {
+        const response = await server.inject(request);
 
-            Code.expect(response.statusCode).to.equal(200);
-            Code.expect(response.result).to.be.an.object();
+        expect(response.statusCode).to.equal(200);
+        expect(response.result).to.be.an.object();
 
-            const pre = response.result.pre;
-            const headers = response.result.headers;
+        const pre = response.result.pre;
+        const headers = response.result.headers;
 
-            Code.expect(pre.language).to.exist();
-            Code.expect(headers['accept-language']).to.not.exist();
+        expect(pre.language).to.exist();
+        expect(headers['accept-language']).to.not.exist();
 
-            Code.expect(pre.language).to.be.an.array();
-            Code.expect(pre.language[0]).to.be.an.object();
-            Code.expect(pre.language[0].code).to.equal('es');
-
-            done();
-        });
+        expect(pre.language).to.be.an.array();
+        expect(pre.language[0]).to.be.an.object();
+        expect(pre.language[0].code).to.equal('es');
     });
 });
