@@ -4,10 +4,49 @@ Parses `Accept-Language` header on requests for HapiJS and attaches them to requ
 
 ### Installation
 
-`npm install --save hapi-accept-language2`
+- Hapi 17: `npm install --save hapi-accept-language2`
+- Hapi 16: `npm install --save hapi-accept-language2@1`
 
 ### Usage
 
+##### Hapi 17
+
+``` javascript
+const Hapi = require('hapi');
+
+const hapiAcceptLanguage = {
+    plugin: 'hapi-accept-language2',
+    options: {
+
+        // Set server default language using RFC-5646 language tags
+        // Optional
+        defaultLanguage: 'es-Latn-ES'
+    }
+};
+
+
+server = new Hapi.Server({ port: 4111 });
+
+server.route({
+
+    method: 'GET',
+    path: '/',
+    handler: (request, reply) => {
+
+        return {
+            headers: request.raw.req.headers,
+            pre: request.pre
+        }
+    }
+});
+
+await server.register([hapiAcceptLanguage]);
+
+await server.start(/* ... */);
+```
+
+
+##### Hapi 16
 ``` javascript
 const Hapi = require('hapi');
 
