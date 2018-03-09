@@ -35,7 +35,8 @@ server.route({
 
         return {
             headers: request.raw.req.headers,
-            pre: request.pre
+            pre: request.pre,
+            languages: request.pre.language
         }
     }
 });
@@ -71,7 +72,8 @@ server.route({
 
         reply({
             headers: request.raw.req.headers,
-            pre: request.pre
+            pre: request.pre,
+            languages: request.pre.language
         }).code(200);
     }
 });
