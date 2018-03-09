@@ -1,6 +1,6 @@
 # Hapi-ly Accept Languages
 
-Parses `Accept-Language` header on requests for HapiJS and attaches them to request. Extracts language, region, script, and quality as per [RFC-5646](https://tools.ietf.org/html/rfc5646) best practices. Based on (hapi-accept-language)[https://github.com/opentable/hapi-accept-language] with better tests, options, and failovers.
+Parses `Accept-Language` header on requests for HapiJS and attaches them to request. Extracts language, region, script, and quality as per [RFC-5646](https://tools.ietf.org/html/rfc5646) best practices. Based on [hapi-accept-language](https://github.com/opentable/hapi-accept-language) with better tests, options, and failovers; uses [accept-language-parser](https://github.com/opentable/accept-language-parser). Special thanks to [OpenTable](https://github.com/opentable) for their work.
 
 ### Installation
 
