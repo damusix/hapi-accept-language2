@@ -3,7 +3,7 @@
 const ALparser = require('accept-language-parser');
 const Package = require('./package');
 
-module.exports = {
+module.exports.plugin = {
     name: Package.name,
     version: Package.version,
     register: function (server, options) {
